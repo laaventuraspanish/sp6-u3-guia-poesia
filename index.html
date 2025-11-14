@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La poesía del Siglo de Oro</title>
+    <!-- Usando Tailwind CSS para estilos rápidos y responsivos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilo para los tooltips */
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+        .tooltip-text {
+            visibility: hidden;
+            width: 400px; /* Más ancho para el análisis métrico */
+            background-color: #334155; /* slate-700 */
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 12px;
+            position: absolute;
+            z-index: 10;
+            left: 105%;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-family: 'Courier New', Courier, monospace; /* Fuente monoespaciada para métrica */
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+        /* Tooltip más pequeño para solo recursos */
+        .tooltip-literario .tooltip-text {
+            width: 300px;
+            font-family: 'Inter', sans-serif;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Flecha del tooltip */
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 100%; /* Flecha a la izquierda */
+            margin-top: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent #334155 transparent transparent;
+        }
+        
+        /* Estilos para la rima (solo sílaba tónica en adelante) */
+        .rhyme-a { color: #059669; font-weight: bold; } /* emerald-600 */
+        .rhyme-b { color: #db2777; font-weight: bold; } /* pink-600 */
+        .rhyme-c { color: #d97706; font-weight: bold; } /* amber-600 */
+        .rhyme-d { color: #0284c7; font-weight: bold; } /* sky-600 */
+        .rhyme-e { color: #4f46e5; font-weight: bold; } /* indigo-600 */
+        
+        .rhyme-letter {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9em;
+            font-weight: bold;
+            opacity: 0.8;
+            margin-left: 8px;
+        }
+        .rhyme-letter-a { color: #059669; }
+        .rhyme-letter-b { color: #db2777; }
+        .rhyme-letter-c { color: #d97706; }
+        .rhyme-letter-d { color: #0284c7; }
+        .rhyme-letter-e { color: #4f46e5; }
+
+        /* Estilo para Sinalefa (puente) */
+        .sinalefa {
+            text-decoration: underline;
+            text-decoration-style: wavy;
+            text-decoration-color: #93c5fd; /* light blue */
+            color: #e0f2fe; /* lighter blue text */
+        }
+
+        /* Para asegurar que el tooltip se vea bien en pantallas pequeñas */
+        @media (max-width: 768px) {
+            .tooltip-text {
+                width: 300px;
+                left: 50%;
+                top: 125%;
+                transform: translateX(-50%);
+            }
+            .tooltip-text::after {
+                right: 50%;
+                top: -10px; /* Flecha arriba */
+                margin-left: -5px;
+                margin-top: 0;
+                transform: translateX(50%);
+                border-color: transparent transparent #334155 transparent;
+            }
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        /* Fuente más clásica para el poema */
+        .sonnet-font {
+             font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+        }
+        
+        /* Estilos de las pestañas */
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            border-bottom-color: #4f46e5; /* indigo-600 */
+            color: #4f46e5;
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Estilo para el glosario y reglas */
+        .content-box {
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb; /* gray-200 */
+            padding-bottom: 1rem;
+        }
+        .content-box strong, .glossary-term strong {
+            color: #1f2937; /* gray-800 */
+        }
+        .content-box em, .glossary-term em {
+            color: #4b5563; /* gray-600 */
+            font-style: italic;
+        }
+        .glossary-term {
+             margin-bottom: 1rem;
+             padding-bottom: 1rem;
+             border-bottom: 1px solid #e5e7eb; /* gray-200 */
+        }
+
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+    <div class="container mx-auto max-w-5xl bg-white rounded-lg shadow-xl my-8 md:my-12 p-6 md:p-10">
+        
+        <h1 class="text-3xl md:text-4xl font-bold text-center text-slate-700 mb-10 sonnet-font">
+            La poesía del Siglo de Oro
+        </h1>
+
+        <!-- Pestañas -->
+        <div class="mt-12">
+            <!-- Botones de Pestañas -->
+            <div class="border-b border-gray-200">
+                <nav class="flex flex-wrap -mb-px space-x-6" aria-label="Tabs">
+                    <!-- Pestaña 1: Contexto -->
+                    <button id="tab-btn-1" class="tab-button active py-4 px-1 border-b-2 border-transparent text-lg text-slate-600 hover:border-gray-300 hover:text-gray-800" onclick="showTab(1)">
+                        Contexto
+                    </button>
+                    <!-- Pestaña 2: Glosario -->
+                    <button id="tab-btn-2" class="tab-button py-4 px-1 border-b-2 border-transparent text-lg text-slate-600 hover:border-gray-300 hover:text-gray-800" onclick="showTab(2)">
+                        Glosario
+                    </button>
+                    <!-- Pestaña 3: Métrica -->
+                    <button id="tab-btn-3" class="tab-button py-4 px-1 border-b-2 border-transparent text-lg text-slate-600 hover:border-gray-300 hover:text-gray-800" onclick="showTab(3)">
+                        Métrica
+                    </button>
+                    <!-- Pestaña 4: Análisis -->
+                    <button id="tab-btn-4" class="tab-button py-4 px-1 border-b-2 border-transparent text-lg text-slate-600 hover:border-gray-300 hover:text-gray-800" onclick="showTab(4)">
+                        Análisis del Poema
+                    </button>
+                    <!-- Pestaña 5: Acentuación -->
+                    <button id="tab-btn-5" class="tab-button py-4 px-1 border-b-2 border-transparent text-lg text-slate-600 hover:border-gray-300 hover:text-gray-800" onclick="showTab(5)">
+                        Acentuación
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Contenido de Pestaña 1: Contexto -->
+            <div id="tab-content-1" class="tab-content active mt-8">
+                <h2 class="text-2xl font-bold text-slate-700 mb-6 sonnet-font">Contexto e Inspiración</h2>
+                <div class="space-y-6 text-slate-700 text-base">
+                    
+                    <div class="content-box">
+                        <h3 class="text-xl font-semibold text-slate-700 mb-2 sonnet-font">El Siglo de Oro Español (Renacimiento y Barroco)</h3>
+                        <p class="mb-2">El "Siglo de Oro" (aprox. 1492-1681) abarca dos movimientos: el Renacimiento (S. XVI) y el Barroco (S. XVII).</p>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>Renacimiento (Garcilaso de la Vega):</strong> La inspiración viene de Italia, especialmente del poeta <strong>Petrarca</strong>. Se importa el soneto. Los temas se centran en el <strong>amor neoplatónico</strong> (la belleza física como reflejo de la divinidad), la naturaleza idealizada (<em>locus amoenus</em>), y la mitología clásica. Se busca la armonía, el equilibrio y la claridad.</li>
+                            <li><strong>Barroco (Góngora, Quevedo):</strong> Es una reacción al Renacimiento, en una época de crisis económica y social en España. La inspiración es la misma (clásica, petrarquista) pero se retuerce. Domina el <strong>"desengaño"</strong> (pesimismo, la idea de que la vida es ilusión). Los temas se centran en la fugacidad de la vida (<em>tempus fugit</em>), la muerte (<em>memento mori</em>), y la crítica social. El estilo se complica enormemente.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="content-box">
+                        <h3 class="text-xl font-semibold text-slate-700 mb-2 sonnet-font">Sor Juana Inés de la Cruz (El Barroco en la Nueva España)</h3>
+                        <p class="mb-2">Sor Juana escribe desde el virreinato de la Nueva España (México) y es una de las figuras cumbre del Barroco hispano.</p>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>Inspiración Europea:</strong> Domina perfectamente los estilos barrocos de España. Se puede ver la influencia del <strong>Culteranismo</strong> de Góngora (lenguaje complejo, alusiones mitológicas) y del <strong>Conceptismo</strong> de Quevedo (juegos de palabras ingeniosos, paradojas).</li>
+                            <li><strong>Inspiración Propia y Americana:</strong> Su inspiración va más allá. Como monja y mujer intelectual, su poesía explora temas únicos:
+                                <ul class="list-decimal list-inside ml-6 mt-1">
+                                    <li><strong>El deseo de saber:</strong> Una profunda curiosidad intelectual y científica, que ella defiende como un don divino.</li>
+                                    <li><strong>La teología y la fe:</strong> Su obra más famosa, "Primero Sueño", es una silva filosófica sobre la búsqueda del conocimiento humano.</li>
+                                    <li><strong>La crítica social (Proto-feminismo):</strong> Famosa por sus "redondillas" ("Hombres necios que acusáis..."), donde usa la lógica y el retruécano para exponer la hipocresía de los hombres en su trato a las mujeres.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Conclusión:</strong> Sor Juana es la culminación del Barroco, usando su complejidad no solo como adorno, sino como herramienta para la defensa intelectual y la crítica filosófica desde una perspectiva única como mujer en el Nuevo Mundo.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenido de Pestaña 2: Glosario -->
+            <div id="tab-content-2" class="tab-content mt-8">
+                <div class="glossary-term">
+                    <strong>Aliteración:</strong> Repetición de un mismo sonido (fonema) para crear un efecto sensorial.
+                    <em>Ejemplo: "En el <strong>s</strong>ilencio <strong>s</strong>ólo <strong>s</strong>e e<strong>s</strong>cuchaba / un <strong>s</strong>u<strong>s</strong>urro de abeja<strong>s</strong> que <strong>s</strong>onaba." (Garcilaso, en otra obra)</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Anáfora:</strong> Repetición de una o más palabras al principio de versos o frases consecutivas.
+                    <em>Ejemplo: "<strong>Mientras</strong> haya unos ojos que reflejen... / <strong>mientras</strong> haya un labio que suspire..." (Gustavo Adolfo Bécquer)</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Antítesis:</strong> Contraposición de dos ideas o palabras de significado opuesto. (Ej. "ardiente, honesto").
+                    <em>Ejemplo: "Es tan <strong>corto</strong> el amor, y es tan <strong>largo</strong> el olvido." (Pablo Neruda)</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Apóstrofe:</strong> Figura retórica que consiste en dirigir la palabra con vehemencia a un ser (animado o inanimado) o a una idea abstracta.
+                    <em>Ejemplo: "<strong>¡Oh tristes nubes oscuras</strong> / que tan veloces marcháis...!" (Rosalía de Castro)</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Arte Mayor y Arte Menor:</strong>
+                    <ul>
+                        <li><strong>Arte Mayor:</strong> Versos de 9 o más sílabas (como el endecasílabo). La rima se marca con letras <strong>MAYÚSCULAS</strong> (A, B, C).</li>
+                        <li><strong>Arte Menor:</strong> Versos de 8 o menos sílabas (como el octosílabo). La rima se marca con letras <strong>minúsculas</strong> (a, b, c).</li>
+                    </ul>
+                </div>
+                <div class="glossary-term">
+                    <strong>Asíndeton:</strong> Omisión de conjunciones (como "y", "o") para dar más rapidez y dinamismo a la frase. (Ej. "mueve, esparce, desordena").
+                    <em>Ejemplo: "Llegué, vi, vencí." (Julio César)</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Conceptismo:</strong> Estilo literario del Barroco (asociado con Quevedo) que se basa en la agudeza de las ideas. Busca la concisión, el ingenio y el juego de palabras (retruécanos, paradojas). Prefiere la profundidad del pensamiento sobre la forma.
+                </div>
+                <div class="glossary-term">
+                    <strong>Cromatismo:</strong> Uso de colores para evocar ideas o sensaciones. (Ej. "rosa y azucena").
+                    <em>Ejemplo: "El <strong>verde</strong> viento, <strong>verdes</strong> ramas." (Federico García Lorca)</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Culteranismo:</strong> Estilo literario del Barroco (asociado con Góngora) que busca la belleza formal. Utiliza un lenguaje muy adornado, lleno de metáforas complejas, cultismos (palabras del latín), y un hipérbaton exagerado. Es sensorial y ornamental.
+                </div>
+                <div class="glossary-term">
+                    <strong>Cuarteto:</strong> Estrofa de cuatro versos de arte mayor (generalmente endecasílabos) con rima consonante, típicamente ABBA.
+                </div>
+                <div class="glossary-term">
+                    <strong>Endecasílabo:</strong> Verso de once (11) sílabas métricas. Es el verso principal de la poesía culta renacentista y barroca (arte mayor).
+                </div>
+                <div class="glossary-term">
+                    <strong>Enumeración:</strong> Sucesión de elementos que pertenecen a un mismo conjunto.
+                    <em>Ejemplo: "Todo lo alegre, lo triunfante, lo risueño." (Rubén Darío)</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Gradación (Ascendente / Descendente):</strong> Enumeración de elementos en un orden progresivo. La <strong>gradación ascendente</strong> (o clímax) va de menos a más. La <strong>gradación descendente</strong> (o anticlímax) va de más a menos.
+                    <em>Ejemplo (descendente/anticlímax): "En tierra, en humo, en polvo, en sombra, en nada." (Ejemplo famoso de Góngora).</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Hipérbaton:</strong> Alteración del orden sintáctico lógico de la frase para crear un efecto de elegancia o énfasis.
+                    <em>Ejemplo: "Volverán las oscuras golondrinas / en tu balcón sus nidos a colgar." (Bécquer)</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Imagen:</strong> Representación mental de algo material o inmaterial a través de las palabras; una metáfora o comparación más visual y directa.
+                    <em>Ejemplo: "La luna era un disco de plata."</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Licencia Poética:</strong> Permiso que se toma el poeta para no seguir las reglas métricas o gramaticales (usar hiato, sinéresis, etc.) con el fin de mantener el ritmo o la medida de los versos.
+                </div>
+                <div class="glossary-term">
+                    <strong>Metáfora:</strong> Identificación de un objeto real con uno imaginario; una comparación sin usar "como". (Ej. "nieve" = canas).
+                    <em>Ejemplo: "Las <strong>perlas</strong> de tu boca." (perlas = dientes)</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Octosílabo:</strong> Verso de ocho (8) sílabas métricas. Es el verso más común de la poesía popular española (arte menor).
+                </div>
+                <div class="glossary-term">
+                    <strong>Paradoja:</strong> Unión de dos ideas aparentemente contradictorias que encierran una verdad profunda. (Ej. "enciende al corazón y lo refrena").
+                    <em>Ejemplo: "Vivo sin vivir en mí, / y tan alta vida espero, / que <strong>muero porque no muero</strong>." (Santa Teresa de Jesús)</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Retruécano:</strong> Juego de palabras que consiste en invertir el orden de los términos de una frase para que la siguiente tenga un significado diferente.
+                    <em>Ejemplo: "No es lo mismo <strong>vivir para comer</strong> que <strong>comer para vivir</strong>."</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Rima Consonante:</strong> Coincidencia de todos los sonidos (vocales y consonantes) a partir de la última vocal acentuada. (Ej. g<strong>esto</strong> / hon<strong>esto</strong>).
+                </div>
+                <div class="glossary-term">
+                    <strong>Silva:</strong> Forma poética que combina versos endecasílabos (11) y heptasílabos (7) con rima consonante, pero distribuidos libremente y con algunos versos sueltos (sin rima).
+                </div>
+                <div class="glossary-term">
+                    <strong>Símbolo:</strong> Objeto o elemento que representa una idea abstracta o un concepto.
+                    <em>Ejemplo: "La <strong>paloma</strong> es símbolo de la paz."</em>
+                </div>
+                <div class="glossary-term">
+                    <strong>Terceto:</strong> Estrofa de tres versos de arte mayor (endecasílabos) con rima consonante. En el soneto, suelen tener rima encadenada (ej. CDE DCE).
+                </div>
+                <div class="glossary-term">
+                    <strong>Tono:</strong> Actitud o estado de ánimo que la voz poética transmite en el poema (ej. nostálgico, irónico, solemne, etc.).
+                </div>
+                <div class="glossary-term">
+                    <strong>Voz Poética (o "yo lírico"):</strong> El "hablante" o la voz que se expresa en el poema. No debe confundirse con el autor (la persona real).
+                </div>
+            </div>
+
+            <!-- Contenido de Pestaña 3: Métrica -->
+            <div id="tab-content-3" class="tab-content mt-8">
+                <h2 class="text-2xl font-bold text-center text-slate-700 mb-2 sonnet-font">Ejemplo: "Soneto XXIII"</h2>
+                <p class="text-xl text-center text-slate-600 mb-6 sonnet-font">Garcilaso de la Vega</p>
+                <div class="md:w-3/4 mx-auto">
+                    <div class="sonnet-font text-lg leading-relaxed bg-slate-50 p-6 rounded-lg">
+                        <!-- Primer Cuarteto -->
+                        <p class="tooltip mb-2">En tan-to que de ro-sa y de a-zu-<span class="rhyme-a">ce-na</span>
+                            <span class="rhyme-letter rhyme-letter-a">(A)</span>
+                            <span class="tooltip-text">
+                                En / tan / to / que / de / ro-<span class="sinalefa">sa_y</span> / <span class="sinalefa">de_a</span>-zu-<span class="rhyme-a">ce-na</span> (11)<br>
+                                <strong>Sinalefas:</strong> (ro-sa_y), (de_a-zucena)
+                            </span>
+                        </p>
+                        <p class="tooltip mb-2">se mues-tra la co-lor en vues-tro <span class="rhyme-b">ges-to</span>,
+                            <span class="rhyme-letter rhyme-letter-b">(B)</span>
+                            <span class="tooltip-text">
+                                se / mues / tra / la / co-lor / en / vues / tro / <span class="rhyme-b">ges-to</span>, (11)<br>
+                                <strong>Sinalefas:</strong> Ninguna.
+                            </span>
+                        </p>
+                        <p class="tooltip mb-2">y que vues-tro mi-rar ar-dien-te, ho-<span class="rhyme-b">nes-to</span>,
+                            <span class="rhyme-letter rhyme-letter-b">(B)</span>
+                            <span class="tooltip-text">
+                                y / que / vues / tro / mi-rar / ar-dien / te, / ho-<span class="rhyme-b">nes-to</span>, (11)<br>
+                                <strong>Sinalefas:</strong> Ninguna.
+                            </span>
+                        </p>
+                        <p class="tooltip mb-6">en-cien-de al co-ra-zón y lo re-<span class="rhyme-a">fre-na</span>;
+                            <span class="rhyme-letter rhyme-letter-a">(A)</span>
+                            <span class="tooltip-text">
+                                en-cien-<span class="sinalefa">de_al</span> / co-ra-zón / y / lo / re-<span class="rhyme-a">fre-na</span>; (11)<br>
+                                <strong>Sinalefas:</strong> (de_al)
+                            </span>
+                        </p>
+                        <!-- Segundo Cuarteto -->
+                        <p class="tooltip mb-2">y en tan-to que el ca-be-llo, que en la <span class="rhyme-a">ve-na</span>
+                            <span class="rhyme-letter rhyme-letter-a">(A)</span>
+                            <span class="tooltip-text">
+                                y / en / tan / to / que / el / ca-be-llo, / que / en / la / <span class="rhyme-a">ve-na</span> (11)<br>
+                                <strong>Sinalefas:</strong> Ninguna.
+                            </span>
+                        </p>
+                        <p class="tooltip mb-2">del o-ro se es-co-gió, con vue-lo <span class="rhyme-b">pres-to</span>,
+                            <span class="rhyme-letter rhyme-letter-b">(B)</span>
+                            <span class="tooltip-text">
+                                del / o-ro / <span class="sinalefa">se_es</span>-co-gió, / con / vue-lo / <span class="rhyme-b">pres-to</span>, (11)<br>
+                                <strong>Sinalefas:</strong> (se_escogió)
+                            </span>
+                        </p>
+                        <p class="tooltip mb-2">por el her-mo-so cue-llo blan-co, en-hi<span class="rhyme-b">es-to</span>,
+                            <span class="rhyme-letter rhyme-letter-b">(B)</span>
+                            <span class="tooltip-text">
+                                por / el / her-mo-so / cue-llo / blan-co, / en-hi<span class="rhyme-b">es-to</span>, (11)<br>
+                                <strong>Sinalefas:</strong> Ninguna.
+                            </span>
+                        </p>
+                        <p class="tooltip mb-6">el vien-to mue-ve, es-par-ce y des-or-<span class="rhyme-a">de-na</span>:
+                            <span class="rhyme-letter rhyme-letter-a">(A)</span>
+                            <span class="tooltip-text">
+                                el / vien-to / mue-ve, / es-par-ce / y / des-or-<span class="rhyme-a">de-na</span>: (11)<br>
+                                <strong>Sinalefas:</strong> Ninguna.
+                            </span>
+                        </p>
+                        <!-- Primer Terceto -->
+                        <p class="tooltip mb-2">co-ged de vues-tra a-le-gre pri-ma-<span class="rhyme-c">ve-ra</span>
+                            <span class="rhyme-letter rhyme-letter-c">(C)</span>
+                            <span class="tooltip-text">
+                                co-ged / de / vues-<span class="sinalefa">tra_a</span>-le-gre / pri-ma-<span class="rhyme-c">ve-ra</span> (11)<br>
+                                <strong>Sinalefas:</strong> (tra_alegre)
+                            </span>
+                        </p>
+                        <p class="tooltip mb-2">el dul-ce fru-to, an-tes que el tiem-po ai-<span class="rhyme-d">ra-do</span>
+                            <span class="rhyme-letter rhyme-letter-d">(D)</span>
+                            <span class="tooltip-text">
+                                el / dul-ce / fru-<span class="sinalefa">to,_an</span>-tes / <span class="sinalefa">que_el</span> / tiem-<span class="sinalefa">po_ai</span>-<span class="rhyme-d">ra-do</span> (11)<br>
+                                <strong>Sinalefas:</strong> (to,_antes), (que_el), (po_airado)
+                            </span>
+                        </p>
+                        <p class="tooltip mb-6">cu-bra de nie-ve la her-mo-sa <span class="rhyme-e">cum-bre</span>;
+                            <span class="rhyme-letter rhyme-letter-e">(E)</span>
+                            <span class="tooltip-text">
+                                cu-bra / de / nie-ve / la / her-mo-sa / <span class="rhyme-e">cum-bre</span>; (11)<br>
+                                <strong>Sinalefas:</strong> Ninguna.
+                            </span>
+                        </p>
+                        <!-- Segundo Terceto -->
+                        <p class="tooltip mb-2">mar-chi-ta-rá la ro-sa el vien-to he-<span class="rhyme-d">la-do</span>,
+                            <span class="rhyme-letter rhyme-letter-d">(D)</span>
+                            <span class="tooltip-text">
+                                mar-chi-ta-rá / la / ro-<span class="sinalefa">sa_el</span> / vien-<span class="sinalefa">to_he</span>-<span class="rhyme-d">la-do</span>, (11)<br>
+                                <strong>Sinalefas:</strong> (sa_el), (to_helado)
+                            </span>
+                        </p>
+                        <p class="tooltip mb-2">to-do lo mu-da-rá la e-dad li-<span class="rhyme-c">ge-ra</span>
+                            <span class="rhyme-letter rhyme-letter-c">(C)</span>
+                            <span class="tooltip-text">
+                                to-do / lo / mu-da-rá / <span class="sinalefa">la_e</span>-dad / li-<span class="rhyme-c">ge-ra</span> (11)<br>
+                                <strong>Sinalefas:</strong> (la_edad)
+                            </span>
+                        </p>
+                        <p class="tooltip">por no ha-cer mu-dan-za en su cos-<span class="rhyme-e">tum-bre</span>.
+                            <span class="rhyme-letter rhyme-letter-e">(E)</span>
+                            <span class="tooltip-text">
+                                por / no / ha-cer / mu-dan-za / en / su / cos-<span class="rhyme-e">tum-bre</span>. (11)<br>
+                                <strong>Sinalefas:</strong> Ninguna.
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido de Pestaña 4: Análisis -->
+            <div id="tab-content-4" class="tab-content mt-8">
+                
+                <!-- Poema para Análisis Literario -->
+                <div class="md:w-3/4 mx-auto mb-12">
+                    <h2 class="text-2xl font-bold text-center text-slate-700 mb-2 sonnet-font">Ejemplo: "Soneto XXIII"</h2>
+                    <p class="text-xl text-center text-slate-600 mb-6 sonnet-font">Garcilaso de la Vega</p>
+                    
+                    <div class="sonnet-font text-lg leading-relaxed bg-slate-50 p-6 rounded-lg">
+                        <p class="tooltip tooltip-literario mb-2">En tanto que de rosa y de azucena
+                            <span class="tooltip-text">
+                                <strong>Recurso:</strong> Cromatismo (rosa=rojo, azucena=blanco).<br>
+                                <strong>Tema:</strong> <em>Descriptio puellae</em> (ideal de belleza).
+                            </span>
+                        </p>
+                        <p class="tooltip tooltip-literario mb-2">se muestra la color en vuestro gesto,
+                            <span class="tooltip-text">
+                                <strong>Concepto:</strong> El "gesto" (rostro) idealizado, con tez clara y sonrosada.
+                            </span>
+                        </p>
+                        <p class="tooltip tooltip-literario mb-2">y que vuestro mirar ardiente, honesto,
+                            <span class="tooltip-text">
+                                <strong>Recurso:</strong> Antítesis (ardiente/honesto). Una mirada apasionada pero pura.
+                            </span>
+                        </p>
+                        <p class="tooltip tooltip-literario mb-6">enciende al corazón y lo refrena;
+                            <span class="tooltip-text">
+                                <strong>Recurso:</strong> Paradoja. El amor que provoca deseo (enciende) pero también respeto (refrena).
+                            </span>
+                        </p>
+                        <p class="tooltip tooltip-literario mb-2">y en tanto que el cabello, que en la vena
+                            <span class="tooltip-text">
+                                <strong>Recurso:</strong> Metáfora. "la vena del oro" = el cabello rubio, color idealizado.
+                            </span>
+                        </p>
+                        <p class="tooltip tooltip-literario mb-2">del oro se escogió, con vuelo presto,
+                            <span class="tooltip-text">
+                                <strong>Recurso:</strong> Hipérbaton. (El orden lógico sería: "y en tanto que el cabello, [que] se escogió de la vena del oro...").
+                            </span>
+                        </p>
+                        <p class="tooltip tooltip-literario mb-2">por el hermoso cuello blanco, enhiesto,
+                            <span class="tooltip-text">
+                                <strong>Recurso:</strong> Epítetos ("hermoso", "blanco", "enhiesto"). Describen y alaban el cuello.
+                            </span>
+                        </p>
+                        <p class="tooltip tooltip-literario mb-6">el viento mueve, esparce y desordena:
+                            <span class="tooltip-text">
+                                <strong>Recurso:</strong> Asíndeton (enumeración sin "y": mueve, esparce, desordena). Da agilidad y movimiento.
+                            </span>
+                        </p>
+                        <p class="tooltip tooltip-literario mb-2">coged de vuestra alegre primavera
+                            <span class="tooltip-text">
+                                <strong>Recurso:</strong> Metáfora ("alegre primavera" = juventud).<br>
+                                <strong>Tema:</strong> CARPE DIEM ("Aprovecha el día").
+                            </span>
+                        </p>
+                        <p class="tooltip tooltip-literario mb-2">el dulce fruto, antes que el tiempo airado
+                            <span class="tooltip-text">
+                                <strong>Recurso:</strong> Metáfora ("dulce fruto" = la belleza, los placeres).<br>
+                                <strong>Recurso:</strong> Personificación ("tiempo airado" = tiempo enojado, destructor).
+                            </span>
+                        </p>
+                        <p class="tooltip tooltip-literario mb-6">cubra de nieve la hermosa cumbre;
+                            <span class="tooltip-text">
+                                <strong>Recurso:</strong> Metáfora ("nieve" = canas; "hermosa cumbre" = la cabeza).
+                            </span>
+                        </p>
+                        <p class="tooltip tooltip-literario mb-2">marchitará la rosa el viento helado,
+                            <span class="tooltip-text">
+                                <strong>Recurso:</strong> Metáfora ("rosa" = belleza; "viento helado" = vejez/muerte).<br>
+                                <strong>Tema:</strong> MEMENTO MORI ("Recuerda que morirás").
+                            </span>
+                        </p>
+                        <p class="tooltip tooltip-literario mb-2">todo lo mudará la edad ligera
+                            <span class="tooltip-text">
+                                <strong>Recurso:</strong> Personificación ("edad ligera" que lo cambia todo).<br>
+                                <strong>Tema:</strong> TEMPUS FUGIT ("El tiempo huye").
+                            </span>
+                        </p>
+                        <p class="tooltip tooltip-literario">por no hacer mudanza en su costumbre.
+                            <span class="tooltip-text">
+                                <strong>Recurso:</strong> Paradoja. La única "costumbre" del tiempo es cambiarlo todo ("hacer mudanza").
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Imagen y Temas Clave -->
+                <div class="flex flex-col md:flex-row gap-8 border-t pt-8">
+                    <div class="md:w-1/2">
+                        <!-- IMAGEN CORREGIDA AQUÍ -->
+                        <img src="https://cdn.creazilla.com/illustrations/7160423/sandro-botticelli-idealized-portrait-of-a-lady-portrait-of-simonetta-vespucci-as-xl.jpeg" 
+                             alt="Retrato idealizado de una dama (Simonetta Vespucci) por Sandro Botticelli" 
+                             class="w-full rounded-lg shadow-md object-cover"
+                             onerror="this.src='https://placehold.co/600x700/e2e8f0/334155?text=Ideal+de+Belleza';this.alt='Placeholder para Ideal de Belleza Renacentista'">
+                        <p class="text-sm text-center text-slate-500 mt-2 italic">"Retrato idealizado de una dama" (c. 1480), por Sandro Botticelli. Representa el ideal de belleza renacentista.</p>
+                    </div>
+                    <div class="md:w-1/2">
+                        <h2 class="text-2xl font-bold text-slate-700 mb-4 sonnet-font">Temas y Conceptos Clave</h2>
+                        <div class="space-y-4 text-slate-700 text-base">
+                            <p><strong>Estructura (Soneto):</strong> 14 versos de arte mayor (endecasílabos). Dos cuartetos (ABBA ABBA) que describen a la dama, y dos tercetos (CDE DCE) que presentan la reflexión filosófica.</p>
+                            <p><strong>Carpe Diem ("Aprovecha el día"):</strong> Tema central del poema, presente en el primer terceto. Es una invitación a gozar de la juventud (la "alegre primavera") antes de que llegue la vejez.</p>
+                            <p><strong>Memento Mori ("Recuerda que morirás"):</strong> El reverso del Carpe Diem. La conciencia de que el tiempo destruye la belleza ("marchitará la rosa") y la vida es fugaz. Esto añade urgencia a la invitación del Carpe Diem.</p>
+                            <p><strong>Tempus Fugit ("El tiempo huye"):</strong> La idea de que el tiempo pasa ("la edad ligera") de forma implacable y todo lo transforma ("todo lo mudará").</p>
+                            <p><strong>Ideal de Belleza Renacentista:</strong> Se describe en los cuartetos. Piel clara (blanca como la "azucena") y sonrosada (roja como la "rosa"), cabello rubio ("vena del oro") y cuello largo ("hermoso cuello blanco, enhiesto").</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido de Pestaña 5: Acentuación -->
+            <div id="tab-content-5" class="tab-content mt-8">
+                <h2 class="text-2xl font-bold text-slate-700 mb-4 sonnet-font">Reglas de Acentuación en Métrica</h2>
+                <div class="space-y-4 text-slate-700 text-base">
+                    <p>Para contar las sílabas de un verso, nos fijamos en la última palabra y su acento. Esto es crucial para que el ritmo funcione.</p>
+                    <div class="content-box">
+                        <strong>Palabra Llana (o Grave):</strong> El acento cae en la penúltima sílaba.
+                        <ul>
+                            <li>- <strong>Regla:</strong> El número de sílabas gramaticales es igual al número de sílabas métricas. (Contamos normal).</li>
+                            <li>- <strong>Fórmula:</strong> Sílabas Contadas + 0 = Total</li>
+                            <li>- <strong>Ejemplo del poema:</strong> Todos los versos de este soneto terminan en palabra llana (azu**ce**na, **ges**to, ho**nes**to, re**fre**na, **ve**na, etc.). Por eso, el conteo de 11 sílabas es directo.</li>
+                        </ul>
+                    </div>
+                    <div class="content-box">
+                        <strong>Palabra Aguda:</strong> El acento cae en la última sílaba.
+                        <ul>
+                            <li>- <strong>Regla:</strong> Se suma una sílaba al conteo final. La pausa final hace que suene como si tuviera una sílaba más.</li>
+                            <li>- <strong>Fórmula:</strong> Sílabas Contadas + 1 = Total</li>
+                            <li>- <strong>Ejemplo (no del poema):</strong> "¡Qué es la vi-da un fre-ne-<strong>sí</strong>!" (7 sílabas) -> 7 + 1 = 8 sílabas (octosílabo).</li>
+                        </ul>
+                    </div>
+                    <div class="content-box">
+                        <strong>Palabra Esdrújula:</strong> El acento cae en la antepenúltima sílaba (o antes).
+                        <ul>
+                            <li>- <strong>Regla:</strong> Se resta una sílaba al conteo final. Las dos últimas sílabas átonas se pronuncian muy rápido, como si fueran una.</li>
+                            <li>- <strong>Fórmula:</strong> Sílabas Contadas - 1 = Total</li>
+                            <li>- <strong>Ejemplo (no del poema):</strong> "Tu-ris-ta-zas, ¡qué <strong>prá</strong>-cti-co!" (8 sílabas) -> 8 - 1 = 7 sílabas (heptasílabo).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabNumber) {
+            // Ocultar todos los contenidos
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Quitar clase 'active' de todos los botones
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Mostrar el contenido de la pestaña seleccionada
+            document.getElementById('tab-content-' + tabNumber).classList.add('active');
+
+            // Añadir clase 'active' al botón seleccionado
+            document.getElementById('tab-btn-' + tabNumber).classList.add('active');
+        }
+
+        // Mostrar la pestaña 1 por defecto
+        document.addEventListener('DOMContentLoaded', () => {
+            showTab(1);
+        });
+    </script>
+</body>
+</html>
+
